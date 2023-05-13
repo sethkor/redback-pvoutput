@@ -22,7 +22,7 @@ Your system id is the system you create in PVOutput to identify your solar setup
 
 ## Consider this Beta
 I'm still fixing a few things and getting used to the apis.  So expect some echoing of junk for the time being.
-You should probably consider running this via crondtab, only needs to run once every 5 mins
+You should probably consider running this via crontab, only needs to run once every 5 mins
 
 ## Did you really use Chat GPT?
 Yes I did.  It didn't get it exactly write, I'd day it got about 70-80% of it right and then I just connected the remaining bits
