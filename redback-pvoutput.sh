@@ -80,9 +80,6 @@ upload_to_pvoutput() {
   echo "$PV_RESPONSE"
 }
 
-# Extract relevant data from
-
-
 # Get bearer token
 RB_RESPONSE=$(get_bearer_token)
 
@@ -133,8 +130,6 @@ for SITE_ID in $(echo "$SITE_IDS" | jq -r '.Data[]'); do
   # Upload data to PVOutput API
   PV_RESPONSE=$(upload_to_pvoutput "$PVOUTPUT_API_KEY" "$PVOUTPUT_SYSTEM_ID" "$DYNAMIC_DATA")
   echo "PVOutput Response: $PV_RESPONSE"
-
-  echo "======================"
 done
 
 
