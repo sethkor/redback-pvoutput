@@ -30,5 +30,5 @@ Yes I did.  It didn't get it exactly write, I'd day it got about 70-80% of it ri
 ## Do you take feature requests?
 Yes I do.
 
-## Does this work with home Assistant?
+## Does this work with Home Assistant?
 No not yet.  You can find a good HASS HACS integration here, but it doesn't send to PVOutput: https://github.com/juicejuice/homeassistant_redback
