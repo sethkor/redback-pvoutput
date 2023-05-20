@@ -57,20 +57,12 @@ upload_to_pvoutput() {
 
   local power_generation=$(echo "$dynamic_data" | jq -r '.Data.PvPowerInstantaneouskW * 1000')
 
-  local pvalltime_energy=$(echo "$dynamic_data" | jq -r '.Data.PvAllTimeEnergykWh * 1000')
-  local export_energy=$(echo "$dynamic_data" | jq -r '.Data.ExportAllTimeEnergykWh * 1000')
-  local import_energy=$(echo "$dynamic_data" | jq -r '.Data.ImportAllTimeEnergykWh * 1000')
-
-  local power_consumption=$((pvalltime_energy - export_energy + import_energy))
-
-
   local curl_command="curl -s 'https://pvoutput.org/service/r2/addstatus.jsp' \
     -H 'X-Pvoutput-Apikey: $api_key' \
     -H 'X-Pvoutput-SystemId: $system_id' \
     -d 'd=$local_date' \
     -d 't=$local_time' \
     -d 'v2=$power_generation' \
-    -d 'v4=$power_consumption' \
     --compressed"
 
   echo "Curl Command: $curl_command"
