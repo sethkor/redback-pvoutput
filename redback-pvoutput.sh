@@ -57,19 +57,22 @@ upload_to_pvoutput() {
 
   local power_generation=$(echo "$dynamic_data" | jq -r '.Data.PvPowerInstantaneouskW * 1000')
 
-  local curl_command="curl -s 'https://pvoutput.org/service/r2/addstatus.jsp' \
-    -H 'X-Pvoutput-Apikey: $api_key' \
-    -H 'X-Pvoutput-SystemId: $system_id' \
-    -d 'd=$local_date' \
-    -d 't=$local_time' \
-    -d 'v2=$power_generation' \
-    --compressed"
+  if (( $(echo "$power_generation > 0" | bc -l) )); then
+    local curl_command="curl -s -w '%{http_code}' 'https://pvoutput.org/service/r2/addstatus.jsp' \
+      -H 'X-Pvoutput-Apikey: $api_key' \
+      -H 'X-Pvoutput-SystemId: $system_id' \
+      -d 'd=$local_date' \
+      -d 't=$local_time' \
+      -d 'v2=$power_generation' \
+      --compressed"
 
-  echo "Curl Command: $curl_command"
+    PV_RESPONSE=$(eval "$curl_command")
+    http_response_code=${PV_RESPONSE: -3}
 
-  PV_RESPONSE=$(eval "$curl_command")
-
-  echo "$PV_RESPONSE"
+    if [[ $http_response_code != "2"* ]]; then
+      echo "PVOutput Response: $PV_RESPONSE"
+    fi
+  fi
 }
 
 # Get bearer token
@@ -83,35 +86,6 @@ SITE_IDS=$(curl -s 'https://api.redbacktech.com/Api/v2/EnergyData?page=0&pageSiz
   -H "Authorization: Bearer $BEARER_TOKEN" \
   --compressed)
 
-# Function to get bearer token
-get_bearer_token() {
-  RB_RESPONSE=$(curl -s 'https://api.redbacktech.com/Api/v2/Auth/token' \
-    -H 'Authorization: Basic '"$(echo -n $RB_CLIENT_ID:$RB_CLIENT_SECRET | base64)" \
-    -H 'Content-Type: application/x-www-form-urlencoded' \
-    --data-raw 'grant_type=client_credentials' \
-    --compressed)
-
-  echo "$RB_RESPONSE"
-}
-
-# Function to extract bearer token from response
-extract_bearer_token() {
-  local bearer_token=$(echo "$1" | jq -r '.access_token')
-  echo "$bearer_token"
-}
-
-# Function to get dynamic data for a site
-get_dynamic_data() {
-  local bearer_token=$1
-  local site_id=$2
-
-  RB_RESPONSE=$(curl -s "https://api.redbacktech.com/Api/v2/EnergyData/$site_id/Dynamic?metadata=true" \
-    -H "Authorization: Bearer $bearer_token" \
-    --compressed)
-
-  echo "$RB_RESPONSE"
-}
-
 # Loop through each site ID and fetch dynamic data
 for SITE_ID in $(echo "$SITE_IDS" | jq -r '.Data[]'); do
 
@@ -120,8 +94,7 @@ for SITE_ID in $(echo "$SITE_IDS" | jq -r '.Data[]'); do
 
 
   # Upload data to PVOutput API
-  PV_RESPONSE=$(upload_to_pvoutput "$PVOUTPUT_API_KEY" "$PVOUTPUT_SYSTEM_ID" "$DYNAMIC_DATA")
-  echo "PVOutput Response: $PV_RESPONSE"
+  upload_to_pvoutput "$PVOUTPUT_API_KEY" "$PVOUTPUT_SYSTEM_ID" "$DYNAMIC_DATA"
 done
 
 
