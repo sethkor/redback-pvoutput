@@ -5,6 +5,12 @@ RB_PAGE_SIZE=100
 
 # Function to get bearer token
 get_bearer_token() {
+  if [[ $(uname) == "Darwin" ]]; then
+    base64_cmd="base64"
+  else
+    base64_cmd="base64 -w 0"
+  fi
+
   RB_RESPONSE=$(curl -s 'https://api.redbacktech.com/Api/v2/Auth/token' \
     -H 'Authorization: Basic '"$(echo -n $RB_CLIENT_ID:$RB_CLIENT_SECRET | base64)" \
     -H 'Content-Type: application/x-www-form-urlencoded' \
@@ -47,7 +53,7 @@ upload_to_pvoutput() {
     date_cmd="date"
   fi
 
-  # Local time zone
+  # Local time zoned
   local_timezone=$($date_cmd +%z)
   # Convert UTC timestamp to local date and time
   local_datetime=$($date_cmd -d "$utc_timestamp" +"%Y%m%d %H:%M")
